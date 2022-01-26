@@ -27,44 +27,47 @@ public class FindMoves
     };
     public void Moves()
     {
-        for (int k = 0; k < 8; k++)
+        if (!Turn.Won)
         {
-            for (int l = 0; l < 8; l++)
+            for (int k = 0; k < 8; k++)
             {
-                if (GETMoves[k,l]==2)
+                for (int l = 0; l < 8; l++)
                 {
-                    GETMoves[k, l] = 0;
-                }
-            }
-                        
-        }
-
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                if (Othello.Board[i, j] == Turn.turn)
-                {
-                    int[,] matrix;
-                    matrix = Check(Othello.Board, i, j, Turn.turn);
-                    for (int k = 0; k < 8; k++)
+                    if (GETMoves[k,l]==2)
                     {
-                        for (int l = 0; l < 8; l++)
-                        {
-                            if (matrix[k,l]==2)
-                            {
-                                GETMoves[k, l] = 2;
-                                
-                            }
-                        }
-                        
+                        GETMoves[k, l] = 0;
                     }
                 }
-                
+                        
             }
+
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (Othello.Board[i, j] == Turn.turn)
+                    {
+                        int[,] matrix;
+                        matrix = Check(Othello.Board, i, j, Turn.turn);
+                        for (int k = 0; k < 8; k++)
+                        {
+                            for (int l = 0; l < 8; l++)
+                            {
+                                if (matrix[k,l]==2)
+                                {
+                                    GETMoves[k, l] = 2;
+                                
+                                }
+                            }
+                        
+                        }
+                    }
+                
+                }
+            }
+
+            
         }
-
-
 
 
 
@@ -319,6 +322,7 @@ public class FindMoves
                     {
                         goto labl8;
                     }
+                    s--;
                 }
             }
 

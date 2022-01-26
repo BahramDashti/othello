@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class Change
 {
+    public TileManager TileManager { get;  }
+
+    public Change(TileManager tileManager)
+    {
+        TileManager = tileManager;
+    }
+    
     public void ChangeOthello(int[,] board, int i, int j, int turn)
     {
         // Right
@@ -184,9 +191,13 @@ public class Change
                 }
             }
         }
-
-        Othello.Board = board;
         
+        Othello.Board = board;
+        foreach (var keyValue in TileManager.Tiles)
+        {
+            keyValue.Value.UpdateTile();
+        }
+
     }
 
 }

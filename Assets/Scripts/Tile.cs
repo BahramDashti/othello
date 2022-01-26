@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Serialization;
 
 public class Tile : MonoBehaviour
 {
@@ -10,12 +12,18 @@ public class Tile : MonoBehaviour
     [SerializeField] private GameObject whitePrefab;
     [SerializeField] private Color _baseColor, _offsetColor;
     [SerializeField] private SpriteRenderer _renderer;
+
+
+
     // [SerializeField] private GameObject _highlight;
     private Change _change;
     private int hasClicked = 0;
     private TileManager _parent;
+    
 
     public Vector3 Position { get; set; }
+    
+    public GameObject Bead { get; set; }
     
 
     public void Init(bool isOffset) {
@@ -24,8 +32,11 @@ public class Tile : MonoBehaviour
 
     private void Awake()
     {
-        _change = new Change();
+        
+
         _parent = transform.parent.GetComponent<TileManager>();
+        
+        _change = new Change(_parent);
         
     }
     private void Start()
@@ -38,14 +49,16 @@ public class Tile : MonoBehaviour
         {
             if (Othello.Board[7-y,x] == -1)
             {
-                var spawnedTile = Instantiate(blackPrefab, transform);
-                spawnedTile.transform.localPosition = new Vector3(0, 0, 0);
+                
+                Bead = Instantiate(blackPrefab, transform);
+                Bead.transform.localPosition = new Vector3(0, 0, 0);
                 hasClicked = 1;
             }
             else if (Othello.Board[7-y, x] == 1)
             {
-                var spawnedTile = Instantiate(whitePrefab, transform);
-                spawnedTile.transform.localPosition = new Vector3(0, 0, 0);
+                
+                Bead = Instantiate(whitePrefab, transform);
+                Bead.transform.localPosition = new Vector3(0, 0, 0);
                 hasClicked = 1;
             }
             
@@ -53,7 +66,7 @@ public class Tile : MonoBehaviour
         }
     }
 
-    private void Update()
+    public void UpdateTile()
     {
         var position = gameObject.transform.position;
         int x = (int) position.x;
@@ -66,43 +79,33 @@ public class Tile : MonoBehaviour
             {
                 if (Othello.Board[7 - y, x] == -1)
                 {
-                    var spawnedTile = Instantiate(blackPrefab, transform);
-                    spawnedTile.transform.localPosition = new Vector3(0, 0, 0);
+                    ClearChildes();
+                    Bead = Instantiate(blackPrefab, transform);
+                    Bead.transform.localPosition = new Vector3(0, 0, 0);
                     hasClicked = 1;
+                    
+                    
                 }
-                else if (Othello.Board[7 - y, x] == 1)
+                else if (Othello.Board[7 - y, x] == 1 )
                 {
-                    var spawnedTile = Instantiate(whitePrefab, transform);
-                    spawnedTile.transform.localPosition = new Vector3(0, 0, 0);
+                    ClearChildes();
+                    Bead = Instantiate(whitePrefab, transform);
+                    Bead.transform.localPosition = new Vector3(0, 0, 0);
                     hasClicked = 1;
                 }
             }
         }
     }
 
-    public void Redrew()
+    private void ClearChildes()
     {
-        var position = gameObject.transform.position;
-        int x = (int) position.x;
-        int y = (int) position.y;
-        if (Othello.Board[7-y, x] != 0)
+        for (var i = 0; i < transform.childCount; i++)
         {
-            if (Othello.Board[7-y,x] == -1)
-            {
-                var spawnedTile = Instantiate(blackPrefab, transform);
-                spawnedTile.transform.localPosition = new Vector3(0, 0, 0);
-                hasClicked = 1;
-            }
-            else if (Othello.Board[7-y, x] == 1)
-            {
-                var spawnedTile = Instantiate(whitePrefab, transform);
-                spawnedTile.transform.localPosition = new Vector3(0, 0, 0);
-                hasClicked = 1;
-            }
-            
-           
+            var currentChild = transform.GetChild(i);
+            Destroy(currentChild.gameObject);
         }
     }
+    
 
     private void OnMouseDown()
     {
@@ -110,7 +113,8 @@ public class Tile : MonoBehaviour
         var position = gameObject.transform.position;
         int x = (int) position.x;
         int y = (int) position.y;
-        _parent.ThereIsMove();
+        //_parent.ThereIsMove();
+        _parent.DrawHint();
         if (FindMoves.GETMoves[7-y,x]==2)
         {
 
@@ -118,6 +122,7 @@ public class Tile : MonoBehaviour
             {
                 if (Turn.turn==-1)
                 {
+                    
                     _parent.clickedTile = Position;
                     var spawnedTile = Instantiate(blackPrefab, transform);
                     spawnedTile.transform.localPosition = new Vector3(0, 0, 0);
@@ -126,8 +131,16 @@ public class Tile : MonoBehaviour
                     _change.ChangeOthello(Othello.Board,7-y,x,Turn.turn);
                     
                     Turn.turn = 1;
+                    _parent.DrawHint();
                 }
-                else
+                if(Turn.AI)
+                {
+                    StartCoroutine(Delay());
+                   
+                    
+                }
+
+                if (Turn.turn==1 && !Turn.AI)
                 {
                     _parent.clickedTile = Position;
                     var spawnedTile = Instantiate(whitePrefab, transform);
@@ -136,18 +149,24 @@ public class Tile : MonoBehaviour
                     _change.ChangeOthello(Othello.Board,7-y,x,Turn.turn);
                     Turn.turn = -1;
                 }
-                hasClicked = 1;
+                hasClicked = 1; 
                 _parent.DrawHint();
                 
             }
         }
-
+        
         
     }
 
-    public void SetPath()
+    IEnumerator Delay()
     {
-        
+        yield return new WaitForSeconds(0.5f);
+        Debug.Log("Finished");
+        _parent.AiTurn();
+    }
+    public void Lock()
+    {
+        hasClicked = 1;
     }
 }
 
